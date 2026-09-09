@@ -1,0 +1,6 @@
+{
+  "name": "Tourist Guide & Local Marketplace",
+  "description": "Tourist advisor platform with interactive maps and a local marketplace for nearby shops and cultural products.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
