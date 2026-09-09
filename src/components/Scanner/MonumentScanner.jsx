@@ -35,6 +35,7 @@ import RestaurantIcon from '@mui/icons-material/Restaurant';
 
 import {
   analyzeLandmarkWithGemini,
+  analyzeImageLocally,
   PRESET_LANDMARKS,
   hasGeminiKey,
 } from '../../api/geminiVisionApi';
@@ -231,14 +232,11 @@ const MonumentScanner = ({ onBack, onViewLocationOnMap }) => {
     } catch (err) {
       clearInterval(progressTimer);
       console.error('Analysis failed:', err);
-      // Accurate fallback to India Gate or preset
-      const defaultLandmark = PRESET_LANDMARKS.find((p) => p.id === 'india-gate') || PRESET_LANDMARKS[0];
+      // Intelligent fallback recognizing visual features and file hints
+      const localResult = await analyzeImageLocally(capturedImage, { fileName: uploadedFileName });
       setScanResult({
-        ...defaultLandmark,
-        imageUrl: capturedImage || defaultLandmark.imageUrl,
-        isAiAnalyzed: false,
-        aiModel: 'Local Heritage Knowledge Engine',
-        confidence: '96%',
+        ...localResult,
+        imageUrl: capturedImage || localResult.imageUrl,
       });
       setStage('info');
     }
