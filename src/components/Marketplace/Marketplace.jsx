@@ -26,6 +26,7 @@ import PlaceIcon from '@mui/icons-material/Place';
 import PhoneIcon from '@mui/icons-material/Phone';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import MapIcon from '@mui/icons-material/Map';
 
 import {
   fetchMarketplaceProducts,
@@ -74,6 +75,7 @@ const Marketplace = ({
   currentPlaceName,
   onNavigateToAddProduct,
   onOpenAuth,
+  onViewStoreOnMap,
 }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -375,43 +377,110 @@ const Marketplace = ({
                       {product.title}
                     </Typography>
 
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.85rem' }}
-                    >
-                      <StorefrontIcon sx={{ fontSize: 16, color: 'primary.light' }} />
-                      <span style={{ fontWeight: 600 }}>{product.shopName}</span>
-                    </Typography>
-
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{
-                        display: 'block',
-                        mt: 0.5,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
+                    {/* Interactive Seller Store Location Box */}
+                    <Box
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onViewStoreOnMap) onViewStoreOnMap(product);
                       }}
+                      sx={{
+                        mt: 1,
+                        p: 1.2,
+                        borderRadius: 1.5,
+                        bgcolor: '#f0fdf4',
+                        border: '1px solid #bbf7d0',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          bgcolor: '#dcfce7',
+                          borderColor: '#4ade80',
+                          transform: 'translateY(-1px)',
+                          boxShadow: '0 2px 6px rgba(16,185,129,0.2)',
+                        },
+                      }}
+                      title="Click to view store on location map"
                     >
-                      {product.locationName}
-                    </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.3 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            fontSize: '0.85rem',
+                            fontWeight: 700,
+                            color: '#166534',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          <StorefrontIcon sx={{ fontSize: 16, color: '#15803d' }} />
+                          <span>{product.shopName}</span>
+                        </Typography>
+                        <Chip
+                          size="small"
+                          icon={<PlaceIcon sx={{ fontSize: '12px !important' }} />}
+                          label="Map"
+                          color="success"
+                          sx={{
+                            height: 20,
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            bgcolor: '#059669',
+                            color: '#fff',
+                            cursor: 'pointer',
+                            '& .MuiChip-icon': { color: '#fff' },
+                          }}
+                        />
+                      </Box>
+
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.4,
+                          color: '#475569',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        <PlaceIcon sx={{ fontSize: 13, color: '#64748b' }} />
+                        {product.locationName}
+                      </Typography>
+                    </Box>
                   </CardContent>
 
-                  <CardActions sx={{ px: 2, pb: 2, pt: 0, justifyContent: 'space-between' }}>
-                    {product.sellerPhone && (
+                  <CardActions sx={{ px: 2, pb: 2, pt: 0, justifyContent: 'space-between', flexWrap: 'wrap', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', gap: 0.8 }}>
+                      {product.sellerPhone && (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<PhoneIcon />}
+                          href={`tel:${product.sellerPhone}`}
+                          onClick={(e) => e.stopPropagation()}
+                          sx={{ textTransform: 'none', fontSize: '0.75rem', px: 1 }}
+                        >
+                          Call
+                        </Button>
+                      )}
                       <Button
                         size="small"
                         variant="outlined"
-                        startIcon={<PhoneIcon />}
-                        href={`tel:${product.sellerPhone}`}
-                        onClick={(e) => e.stopPropagation()}
-                        sx={{ textTransform: 'none', fontSize: '0.78rem' }}
+                        color="success"
+                        startIcon={<PlaceIcon />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onViewStoreOnMap) onViewStoreOnMap(product);
+                        }}
+                        sx={{ textTransform: 'none', fontSize: '0.75rem', px: 1, fontWeight: 600 }}
                       >
-                        Call Seller
+                        Map
                       </Button>
-                    )}
+                    </Box>
                     <Button
                       size="small"
                       color="primary"
@@ -435,6 +504,7 @@ const Marketplace = ({
         onClose={() => setSelectedProduct(null)}
         isLiked={selectedProduct ? favorites.includes(selectedProduct.id) : false}
         onToggleLike={handleToggleLike}
+        onViewStoreOnMap={onViewStoreOnMap}
       />
     </Box>
   );

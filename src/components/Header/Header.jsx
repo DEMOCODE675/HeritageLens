@@ -18,7 +18,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import ExploreIcon from '@mui/icons-material/Explore';
 import LogoutIcon from '@mui/icons-material/Logout';
-import KeyIcon from '@mui/icons-material/Key';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 import { getAutocompleteSuggestionsSafe } from '../../api/geoapifyApi';
@@ -31,7 +30,6 @@ const Header = ({
   currentUser,
   onOpenAuth,
   onLogout,
-  onOpenConfig,
 }) => {
   const { classes } = useStyles();
   const [query, setQuery] = useState('');
@@ -130,13 +128,6 @@ const Header = ({
 
           {/* Right Action Icons & Auth */}
           <Box className={classes.userSection} sx={{ ml: { xs: 0, sm: 1.5 } }}>
-            {/* Keys configuration button so user can add keys at the end */}
-            <Tooltip title="Configure Firebase & Appwrite Keys">
-              <IconButton color="inherit" size="small" onClick={onOpenConfig}>
-                <KeyIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-
             {/* User Profile / Login */}
             {currentUser ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
