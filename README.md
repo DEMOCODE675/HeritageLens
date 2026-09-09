@@ -1,3 +1,5 @@
+<img width="1896" height="1047" alt="live_loc_places_hotels" src="https://github.com/user-attachments/assets/1f7d497a-13f1-45a2-a334-bda64570a4af" />
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
