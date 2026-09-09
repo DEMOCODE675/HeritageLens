@@ -12,14 +12,17 @@ import {
   Tabs,
   Tab,
   Chip,
-  Divider,
+  FormControlLabel,
+  Switch,
 } from '@mui/material';
 import KeyIcon from '@mui/icons-material/Key';
-import CloudQueueIcon from '@mui/icons-material/CloudQueue';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ExploreIcon from '@mui/icons-material/Explore';
 
 import { getFirebaseConfig, isFirebaseConfigured, reloadFirebaseWithConfig } from '../../config/firebase';
 import { getAppwriteConfig, isAppwriteConfigured, reloadAppwriteWithConfig } from '../../config/appwrite';
+import { getGeoapifyKey } from '../../api/geoapifyApi';
+import { getFoursquareConfig } from '../../api/foursquareApi';
 
 const ConfigModal = ({ open, onClose }) => {
   const [tabIndex, setTabIndex] = useState(0);
@@ -39,10 +42,15 @@ const ConfigModal = ({ open, onClose }) => {
   const [awProjectId, setAwProjectId] = useState(currentAw.projectId || '');
   const [awBucketId, setAwBucketId] = useState(currentAw.bucketId || '');
 
-  const [savedMessage, setSavedMessage] = useState('');
+  // Places & Map APIs
+  const [geoKey, setGeoKey] = useState(getGeoapifyKey());
+  const fsConfig = getFoursquareConfig();
+  const [fsKey, setFsKey] = useState(fsConfig.key || '');
+  const [fsEnabled, setFsEnabled] = useState(fsConfig.enabled || false);
 
   const fbConnected = isFirebaseConfigured();
   const awConnected = isAppwriteConfigured();
+  const hasPlacesKey = Boolean(geoKey.trim() || fsKey.trim());
 
   const handleSaveFirebase = () => {
     const config = {
@@ -73,6 +81,27 @@ const ConfigModal = ({ open, onClose }) => {
     reloadAppwriteWithConfig(null);
   };
 
+  const handleSavePlaces = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('geoapify_api_key', geoKey.trim());
+      localStorage.setItem('foursquare_api_key', fsKey.trim());
+      localStorage.setItem('foursquare_enabled', fsEnabled ? 'true' : 'false');
+      window.location.reload();
+    }
+  };
+
+  const handleResetPlaces = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('geoapify_api_key');
+      localStorage.removeItem('foursquare_api_key');
+      localStorage.removeItem('foursquare_enabled');
+      setGeoKey('');
+      setFsKey('');
+      setFsEnabled(false);
+      window.location.reload();
+    }
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -82,7 +111,7 @@ const ConfigModal = ({ open, onClose }) => {
             API Keys & Backend Integration
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Configure live Firebase (Auth & Firestore) and Appwrite (Media Storage) keys
+            Configure live Firebase, Appwrite, and Places & Map APIs
           </Typography>
         </Box>
       </DialogTitle>
@@ -92,7 +121,7 @@ const ConfigModal = ({ open, onClose }) => {
           <Tab
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                Firebase (Auth & DB)
+                Firebase
                 {fbConnected && <CheckCircleIcon color="success" sx={{ fontSize: 16 }} />}
               </Box>
             }
@@ -100,8 +129,16 @@ const ConfigModal = ({ open, onClose }) => {
           <Tab
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                Appwrite (Media Storage)
+                Appwrite
                 {awConnected && <CheckCircleIcon color="success" sx={{ fontSize: 16 }} />}
+              </Box>
+            }
+          />
+          <Tab
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                Places & Maps
+                <CheckCircleIcon color="success" sx={{ fontSize: 16 }} />
               </Box>
             }
           />
@@ -109,7 +146,7 @@ const ConfigModal = ({ open, onClose }) => {
       </Box>
 
       <DialogContent sx={{ pt: 2.5 }}>
-        {tabIndex === 0 ? (
+        {tabIndex === 0 && (
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
@@ -181,7 +218,9 @@ const ConfigModal = ({ open, onClose }) => {
               </Button>
             </Box>
           </Box>
-        ) : (
+        )}
+
+        {tabIndex === 1 && (
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
@@ -236,6 +275,68 @@ const ConfigModal = ({ open, onClose }) => {
             </Box>
           </Box>
         )}
+
+        {tabIndex === 2 && (
+          <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                Places & Maps Data Source
+              </Typography>
+              <Chip
+                size="small"
+                label={hasPlacesKey ? 'Custom API Key Active' : 'Live OpenStreetMap (Free, Active)'}
+                color="success"
+              />
+            </Box>
+
+            <Alert severity="success" sx={{ mb: 2, fontSize: '0.85rem' }}>
+              Places (Restaurants, Hotels, Attractions) are dynamically loaded from <strong>OpenStreetMap Live Data</strong> worldwide without requiring any API key. You can optionally provide your own Geoapify or Foursquare keys below.
+            </Alert>
+
+            <TextField
+              margin="dense"
+              label="Geoapify API Key (Optional)"
+              fullWidth
+              size="small"
+              value={geoKey}
+              onChange={(e) => setGeoKey(e.target.value)}
+              placeholder="e.g. 78f14c..."
+              helperText="Enables custom Geoapify places & customized tile styles"
+            />
+
+            <TextField
+              margin="dense"
+              label="Foursquare API Key (Optional)"
+              fullWidth
+              size="small"
+              value={fsKey}
+              onChange={(e) => setFsKey(e.target.value)}
+              placeholder="fsq3..."
+              sx={{ mt: 2 }}
+            />
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={fsEnabled}
+                  onChange={(e) => setFsEnabled(e.target.checked)}
+                  color="primary"
+                />
+              }
+              label="Enable Foursquare API Provider"
+              sx={{ mt: 1 }}
+            />
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+              <Button color="error" size="small" onClick={handleResetPlaces}>
+                Reset to OpenStreetMap
+              </Button>
+              <Button variant="contained" onClick={handleSavePlaces}>
+                Save & Apply Places Settings
+              </Button>
+            </Box>
+          </Box>
+        )}
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -248,3 +349,4 @@ const ConfigModal = ({ open, onClose }) => {
 };
 
 export default ConfigModal;
+
