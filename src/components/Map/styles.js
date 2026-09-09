@@ -18,6 +18,10 @@ export default makeStyles()(() => ({
       background: 'transparent',
       border: 0,
     },
+    '& :global(.scanned-landmark-marker)': {
+      background: 'transparent',
+      border: 0,
+    },
     '& :global(.place-marker-card)': {
       display: 'flex',
       alignItems: 'center',

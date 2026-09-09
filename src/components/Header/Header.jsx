@@ -19,6 +19,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import ExploreIcon from '@mui/icons-material/Explore';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 
 import { getAutocompleteSuggestionsSafe } from '../../api/geoapifyApi';
 import useStyles from './styles';
@@ -72,23 +73,46 @@ const Header = ({
 
           {/* Navigation link of page called "marketPlace" */}
           <Box className={classes.navContainer}>
-            <Button
-              className={`${classes.navButton} ${activePage === 'advisor' ? classes.activeNavButton : ''}`}
-              startIcon={<ExploreIcon fontSize="small" />}
-              onClick={() => onNavigate && onNavigate('advisor')}
-            >
-              Guide
-            </Button>
-            <Button
-              className={`${classes.navButton} ${
-                activePage === 'marketplace' || activePage === 'add-product' ? classes.activeNavButton : ''
-              }`}
-              startIcon={<StorefrontIcon fontSize="small" />}
-              onClick={() => onNavigate && onNavigate('marketplace')}
-              sx={{ border: '1px solid rgba(255,255,255,0.4)' }}
-            >
-              marketPlace
-            </Button>
+            <Tooltip title="Travel Guide">
+              <Button
+                className={`${classes.navButton} ${activePage === 'advisor' ? classes.activeNavButton : ''}`}
+                startIcon={<ExploreIcon fontSize="small" />}
+                onClick={() => onNavigate && onNavigate('advisor')}
+                aria-label="Guide"
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Guide</Box>
+              </Button>
+            </Tooltip>
+            <Tooltip title="Local Marketplace">
+              <Button
+                className={`${classes.navButton} ${
+                  activePage === 'marketplace' || activePage === 'add-product' ? classes.activeNavButton : ''
+                }`}
+                startIcon={<StorefrontIcon fontSize="small" />}
+                onClick={() => onNavigate && onNavigate('marketplace')}
+                sx={{ border: '1px solid rgba(255,255,255,0.4)' }}
+                aria-label="Marketplace"
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>marketPlace</Box>
+              </Button>
+            </Tooltip>
+            <Tooltip title="Sight & Monument Scanner">
+              <Button
+                className={`${classes.navButton} ${
+                  activePage === 'scanner' ? classes.activeNavButton : ''
+                }`}
+                startIcon={<CameraAltIcon fontSize="small" />}
+                onClick={() => onNavigate && onNavigate('scanner')}
+                sx={{
+                  bgcolor: activePage === 'scanner' ? 'rgba(255,255,255,0.32)' : 'rgba(255,255,255,0.12)',
+                  border: '1px solid rgba(255,255,255,0.5)',
+                  fontWeight: 700,
+                }}
+                aria-label="Cam Scanner"
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Cam Scanner</Box>
+              </Button>
+            </Tooltip>
           </Box>
         </Box>
 

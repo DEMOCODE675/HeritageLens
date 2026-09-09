@@ -53,6 +53,28 @@ const createStoreMarkerIcon = (store) => L.divIcon({
   popupAnchor: [0, -44],
 });
 
+const createScannedLandmarkMarkerIcon = (landmark) => L.divIcon({
+  className: 'scanned-landmark-marker',
+  html: `<div style="position:relative;display:flex;flex-direction:column;align-items:center;">
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;background:linear-gradient(135deg,#0284c7 0%,#1e40af 100%);color:#fff;border:2.5px solid #ffffff;border-radius:24px;box-shadow:0 0 0 4px rgba(2,132,199,0.5), 0 8px 24px rgba(0,0,0,0.4);cursor:pointer;font-family:sans-serif;">
+      <div style="width:26px;height:26px;border-radius:50%;background:#ffffff;color:#0284c7;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;box-shadow:0 2px 4px rgba(0,0,0,0.25);">📍</div>
+      <div style="text-align:left;line-height:1.2;">
+        <div style="font-size:8.5px;font-weight:900;color:#fef08a;letter-spacing:0.8px;text-transform:uppercase;display:flex;align-items:center;gap:4px;">
+          <span style="width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block;box-shadow:0 0 6px #4ade80;"></span>
+          YOU ARE HERE
+        </div>
+        <div style="font-size:12.5px;font-weight:800;color:#ffffff;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          ${escapeHtml(landmark.title || 'Scanned Sight')}
+        </div>
+      </div>
+    </div>
+    <div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:9px solid #1e40af;margin-top:-1px;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3));"></div>
+  </div>`,
+  iconSize: [200, 52],
+  iconAnchor: [100, 52],
+  popupAnchor: [0, -52],
+});
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -60,30 +82,39 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const RecenterMap = ({ coords, highlightedStore }) => {
+const RecenterMap = ({ coords, highlightedStore, highlightedLandmark }) => {
   const map = useMap();
 
   useEffect(() => {
-    if (highlightedStore && Number.isFinite(highlightedStore.lat) && Number.isFinite(highlightedStore.lng)) {
+    if (highlightedLandmark && Number.isFinite(highlightedLandmark.coordinates?.lat) && Number.isFinite(highlightedLandmark.coordinates?.lng)) {
+      map.setView([highlightedLandmark.coordinates.lat, highlightedLandmark.coordinates.lng], 16, { animate: true });
+    } else if (highlightedStore && Number.isFinite(highlightedStore.lat) && Number.isFinite(highlightedStore.lng)) {
       map.setView([highlightedStore.lat, highlightedStore.lng], 16, { animate: true });
     } else if (Number.isFinite(coords?.lat) && Number.isFinite(coords?.lng)) {
       map.setView([coords.lat, coords.lng]);
     }
-  }, [coords, highlightedStore, map]);
+  }, [coords, highlightedStore, highlightedLandmark, map]);
 
   return null;
 };
 
-const Map = ({ coords, places, setChildClicked, highlightedStore, onBackToMarketplace }) => {
+const Map = ({ coords, places, setChildClicked, highlightedStore, highlightedLandmark, onBackToMarketplace, onBackToScanner }) => {
   const { classes } = useStyles();
   const tileConfig = getTileConfig();
   const storeMarkerRef = React.useRef(null);
+  const landmarkMarkerRef = React.useRef(null);
 
   useEffect(() => {
     if (highlightedStore && storeMarkerRef.current) {
       storeMarkerRef.current.openPopup();
     }
   }, [highlightedStore]);
+
+  useEffect(() => {
+    if (highlightedLandmark && landmarkMarkerRef.current) {
+      landmarkMarkerRef.current.openPopup();
+    }
+  }, [highlightedLandmark]);
 
   return (
     <div className={`${classes.mapContainer} ${classes.markerStyles}`}>
@@ -92,7 +123,84 @@ const Map = ({ coords, places, setChildClicked, highlightedStore, onBackToMarket
           attribution={tileConfig.attribution}
           url={tileConfig.url}
         />
-        <RecenterMap coords={coords} highlightedStore={highlightedStore} />
+        <RecenterMap coords={coords} highlightedStore={highlightedStore} highlightedLandmark={highlightedLandmark} />
+
+        {/* Highlighted Scanned Landmark Marker ("You are here") */}
+        {highlightedLandmark && Number.isFinite(highlightedLandmark.coordinates?.lat) && Number.isFinite(highlightedLandmark.coordinates?.lng) && (
+          <Marker
+            ref={landmarkMarkerRef}
+            position={[highlightedLandmark.coordinates.lat, highlightedLandmark.coordinates.lng]}
+            icon={createScannedLandmarkMarkerIcon(highlightedLandmark)}
+            zIndexOffset={1200}
+          >
+            <Popup autoPan>
+              <div style={{ maxWidth: 260, padding: 2, fontFamily: 'sans-serif' }}>
+                {highlightedLandmark.imageUrl && (
+                  <img
+                    src={highlightedLandmark.imageUrl}
+                    alt={highlightedLandmark.title}
+                    style={{ width: '100%', height: 110, objectFit: 'cover', borderRadius: 6, marginBottom: 8 }}
+                  />
+                )}
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#0284c7', color: '#fff', fontSize: 10, fontWeight: 900, padding: '3px 8px', borderRadius: 4, marginBottom: 6, letterSpacing: 0.5 }}>
+                  🎯 YOU ARE HERE • SCANNED SIGHT
+                </div>
+                <Typography variant="subtitle1" style={{ fontWeight: 900, color: '#0f172a', lineHeight: 1.2 }}>
+                  {highlightedLandmark.title}
+                </Typography>
+                {highlightedLandmark.category && (
+                  <div style={{ display: 'inline-block', background: '#f1f5f9', color: '#334155', fontSize: 11, fontWeight: 700, padding: '2px 6px', borderRadius: 4, marginTop: 4 }}>
+                    🏛️ {highlightedLandmark.category}
+                  </div>
+                )}
+                {highlightedLandmark.location && (
+                  <Typography variant="body2" style={{ color: '#475569', fontSize: 12, marginTop: 4, fontWeight: 500 }}>
+                    📍 {highlightedLandmark.location}
+                  </Typography>
+                )}
+                {highlightedLandmark.history && (
+                  <Typography variant="body2" style={{ color: '#334155', fontSize: 11, marginTop: 6, lineHeight: 1.3, maxHeight: 60, overflow: 'hidden' }}>
+                    {highlightedLandmark.history.slice(0, 130)}...
+                  </Typography>
+                )}
+                <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <a
+                    href={`https://www.openstreetmap.org/directions?to=${highlightedLandmark.coordinates.lat}%2C${highlightedLandmark.coordinates.lng}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      fontSize: 11,
+                      color: '#0284c7',
+                      textDecoration: 'underline',
+                      fontWeight: 700,
+                    }}
+                  >
+                    🗺️ Get Directions
+                  </a>
+                  {onBackToScanner && (
+                    <button
+                      type="button"
+                      onClick={onBackToScanner}
+                      style={{
+                        marginLeft: 'auto',
+                        background: '#0284c7',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 4,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        padding: '4px 8px',
+                      }}
+                    >
+                      📷 Full History
+                    </button>
+                  )}
+                </div>
+              </div>
+            </Popup>
+          </Marker>
+        )}
 
         {/* Highlighted Marketplace Seller Store Marker */}
         {highlightedStore && Number.isFinite(highlightedStore.lat) && Number.isFinite(highlightedStore.lng) && (
