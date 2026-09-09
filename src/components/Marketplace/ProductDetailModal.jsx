@@ -18,7 +18,8 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import PlaceIcon from '@mui/icons-material/Place';
-import ShareIcon from '@mui/icons-material/Share';
+import MapIcon from '@mui/icons-material/Map';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 const formatCurrency = (amount, curr = 'USD') => {
   if (curr === 'INR') return `₹${amount}`;
@@ -27,7 +28,7 @@ const formatCurrency = (amount, curr = 'USD') => {
   return `$${amount}`;
 };
 
-const ProductDetailModal = ({ product, open, onClose, isLiked, onToggleLike }) => {
+const ProductDetailModal = ({ product, open, onClose, isLiked, onToggleLike, onViewStoreOnMap }) => {
   if (!product) return null;
 
   const cleanPhone = product.sellerPhone ? product.sellerPhone.replace(/[^0-9]/g, '') : '';
@@ -35,6 +36,10 @@ const ProductDetailModal = ({ product, open, onClose, isLiked, onToggleLike }) =
     ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
         `Hi! I saw your product "${product.title}" from "${product.shopName}" on Tourist Guide Marketplace and would like to know more.`
       )}`
+    : null;
+
+  const osmUrl = (product.lat && product.lng)
+    ? `https://www.openstreetmap.org/?mlat=${product.lat}&mlon=${product.lng}#map=17/${product.lat}/${product.lng}`
     : null;
 
   return (
@@ -87,19 +92,68 @@ const ProductDetailModal = ({ product, open, onClose, isLiked, onToggleLike }) =
 
           <Divider sx={{ my: 1.5 }} />
 
-          {/* Shop & Location Information */}
-          <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2, mb: 2 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <StorefrontIcon color="primary" /> {product.shopName}
+          {/* Shop & Location Information with Store Location Map Feature */}
+          <Box sx={{ p: 2, bgcolor: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 2, mb: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#166534', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <StorefrontIcon color="success" /> {product.shopName}
+              </Typography>
+              <Chip
+                size="small"
+                label="Verified Store"
+                color="success"
+                sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700 }}
+              />
+            </Box>
+
+            <Typography variant="body2" sx={{ color: '#334155', display: 'flex', alignItems: 'center', gap: 0.8, mt: 1 }}>
+              <PlaceIcon fontSize="small" sx={{ color: '#15803d' }} /> {product.locationName}
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mt: 0.5 }}>
-              <PlaceIcon fontSize="small" color="action" /> {product.locationName}
-            </Typography>
+
             {product.sellerName && (
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, pl: 3.5 }}>
-                Artisan / Owner: {product.sellerName}
+              <Typography variant="caption" sx={{ display: 'block', mt: 0.5, pl: 3.5, color: '#64748b' }}>
+                Seller / Artisan: <strong>{product.sellerName}</strong>
               </Typography>
             )}
+
+            {/* Click to move to location map button */}
+            <Box sx={{ mt: 1.8, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<MapIcon />}
+                onClick={() => {
+                  onClose();
+                  if (onViewStoreOnMap) {
+                    onViewStoreOnMap(product);
+                  }
+                }}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  bgcolor: '#059669',
+                  '&:hover': { bgcolor: '#047857' },
+                  boxShadow: '0 2px 8px rgba(5,150,105,0.3)',
+                }}
+              >
+                Move to Store on Map
+              </Button>
+
+              {osmUrl && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="inherit"
+                  href={osmUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  startIcon={<OpenInNewIcon fontSize="small" />}
+                  sx={{ textTransform: 'none', fontSize: '0.8rem', borderColor: '#cbd5e1' }}
+                >
+                  External Map
+                </Button>
+              )}
+            </Box>
           </Box>
 
           {/* Description / Story */}
