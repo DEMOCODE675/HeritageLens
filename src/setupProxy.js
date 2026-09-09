@@ -1,20 +1,31 @@
-const express = require('express');
-const { GoogleGenAI } = require('@google/genai');
-
 module.exports = function (app) {
-  // Support base64 image uploads up to 35MB
-  app.use(express.json({ limit: '35mb' }));
-  app.use(express.urlencoded({ limit: '35mb', extended: true }));
-
-  app.post('/api/analyze-landmark', async (req, res) => {
+  try {
+    let express;
     try {
-      const { imageDataUrl, customApiKey, fileName } = req.body;
+      express = require('express');
+      app.use(express.json({ limit: '35mb' }));
+      app.use(express.urlencoded({ limit: '35mb', extended: true }));
+    } catch (e) {
+      console.warn('[setupProxy] Express body parser optional load warning:', e.message);
+    }
 
-      if (!imageDataUrl) {
-        return res.status(400).json({ error: 'No image data provided' });
-      }
+    app.post('/api/analyze-landmark', async (req, res) => {
+      try {
+        const { imageDataUrl, customApiKey, fileName } = req.body || {};
 
-      const apiKey = customApiKey || process.env.GEMINI_API_KEY || process.env.REACT_APP_GEMINI_API_KEY;
+        if (!imageDataUrl) {
+          return res.status(400).json({ error: 'No image data provided' });
+        }
+
+        let GoogleGenAI;
+        try {
+          const genaiMod = require('@google/genai');
+          GoogleGenAI = genaiMod.GoogleGenAI;
+        } catch (genaiErr) {
+          console.warn('[setupProxy] @google/genai not loaded locally, using knowledge fallback:', genaiErr.message);
+        }
+
+        const apiKey = customApiKey || process.env.GEMINI_API_KEY || process.env.REACT_APP_GEMINI_API_KEY;
       if (!apiKey) {
         return res.status(500).json({
           error: 'No Gemini API key available on server or client. Please configure GEMINI_API_KEY.',
@@ -251,4 +262,7 @@ CRITICAL: Return ONLY a valid, raw JSON object (strictly no markdown backticks, 
       });
     }
   });
+  } catch (err) {
+    console.warn('[setupProxy] Error initializing dev proxy middleware:', err.message);
+  }
 };
