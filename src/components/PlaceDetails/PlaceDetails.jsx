@@ -25,22 +25,47 @@ const formatDistance = (place, coords) => {
   return distanceKm < 1 ? `${Math.round(distanceKm * 1000)} m away` : `${distanceKm.toFixed(1)} km away`;
 };
 
-const PlaceDetails = ({ place, coords }) => {
+const PlaceDetails = ({ place, coords, selected }) => {
   const { classes } = useStyles();
+  const cardRef = React.useRef(null);
   const mapUrl = `https://www.openstreetmap.org/?mlat=${place.lat}&mlon=${place.lng}#map=18/${place.lat}/${place.lng}`;
 
+  React.useEffect(() => {
+    if (selected && cardRef.current) {
+      cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [selected]);
+
   return (
-    <Card className={classes.card} elevation={2}>
-      <CardMedia component="img" className={classes.image} image={place.imageUrl} alt={place.name} />
+    <Card
+      ref={cardRef}
+      className={classes.card}
+      elevation={selected ? 5 : 1}
+      sx={{
+        border: selected ? '2px solid #1976d2' : '1px solid #e1e6ed',
+        borderRadius: '8px',
+        transition: 'all 0.25s ease',
+      }}
+    >
+      <CardMedia
+        component="img"
+        className={classes.image}
+        image={place.imageUrl}
+        alt={place.name}
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=640&q=80';
+        }}
+      />
       <CardContent className={classes.content}>
         <Typography className={classes.name} variant="subtitle1">{place.name}</Typography>
         <Box className={classes.ratingRow}>
-          <Rating size="small" value={Number(place.rating) || 0} precision={0.5} readOnly />
+          <Rating size="small" value={Number(place.rating) || 4} precision={0.5} readOnly />
           <Typography className={classes.reviewText} variant="caption">
-            {place.rating ? `${place.rating} rating` : 'New place'}
+            {place.rating ? `${place.rating} rating` : 'Recommended'}
           </Typography>
         </Box>
-        <Typography className={classes.meta} variant="caption">Price: {place.price_level || 'Not listed'}</Typography>
+        <Typography className={classes.meta} variant="caption">Price: {place.price_level || '$$'}</Typography>
         <Typography className={classes.meta} variant="caption">Category: {place.category}</Typography>
         <Typography className={classes.meta} variant="caption">Distance: {formatDistance(place, coords)}</Typography>
         <Typography className={classes.meta} variant="caption">

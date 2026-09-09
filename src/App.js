@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { CssBaseline, Grid } from '@mui/material';
+import { CssBaseline, Grid, Box, Alert, Button, IconButton } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import CloseIcon from '@mui/icons-material/Close';
 
 import { getFoursquarePlaces } from './api/foursquareApi';
 import Header from './components/Header/Header';
@@ -9,7 +11,6 @@ import Map from './components/Map/Map';
 import Marketplace from './components/Marketplace/Marketplace';
 import AddProduct from './components/Marketplace/AddProduct';
 import AuthModal from './components/Auth/AuthModal';
-import ConfigModal from './components/ConfigModal/ConfigModal';
 import { subscribeToAuth, logoutUser } from './config/firebase';
 
 const theme = createTheme({
@@ -36,8 +37,8 @@ const App = () => {
   const [activePage, setActivePage] = useState('advisor'); // 'advisor' | 'marketplace' | 'add-product'
   const [currentUser, setCurrentUser] = useState(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [configModalOpen, setConfigModalOpen] = useState(false);
   const [pendingPage, setPendingPage] = useState(null);
+  const [highlightedStore, setHighlightedStore] = useState(null);
 
   // Subscribe to Firebase Auth changes
   useEffect(() => {
@@ -76,6 +77,17 @@ const App = () => {
     setCoords({ lat, lng });
     if (name) {
       setCurrentPlaceName(name);
+    }
+    setHighlightedStore(null);
+  };
+
+  // Move user from Marketplace to Location Map with highlighted seller store
+  const handleViewStoreOnMap = (storeData) => {
+    if (storeData && Number.isFinite(Number(storeData.lat)) && Number.isFinite(Number(storeData.lng))) {
+      setCoords({ lat: Number(storeData.lat), lng: Number(storeData.lng) });
+      setCurrentPlaceName(storeData.shopName ? `${storeData.shopName} (${storeData.locationName || 'Local Store'})` : 'Seller Store');
+      setHighlightedStore(storeData);
+      setActivePage('advisor');
     }
   };
 
@@ -118,30 +130,63 @@ const App = () => {
         currentUser={currentUser}
         onOpenAuth={() => setAuthModalOpen(true)}
         onLogout={handleLogout}
-        onOpenConfig={() => setConfigModalOpen(true)}
       />
 
-      {/* 1. Tourist Guide Advisor View (Unmodified original logic & layout) */}
+      {/* 1. Tourist Guide Advisor View */}
       {activePage === 'advisor' && (
-        <Grid container spacing={3} style={{ width: '100%' }}>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <List
-              isLoading={isLoading}
-              childClicked={childClicked}
-              places={places}
-              coords={coords}
-              type={type}
-              setType={setType}
-            />
+        <Box sx={{ width: '100%' }}>
+          {/* Seller Store Banner when navigating from marketplace */}
+          {highlightedStore && (
+            <Box sx={{ px: 3, pt: 2, pb: 1 }}>
+              <Alert
+                severity="success"
+                icon={<StorefrontIcon fontSize="inherit" />}
+                action={
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <Button
+                      color="inherit"
+                      size="small"
+                      variant="outlined"
+                      onClick={() => setActivePage('marketplace')}
+                      sx={{ textTransform: 'none', fontWeight: 600, borderColor: 'currentColor' }}
+                    >
+                      Return to Marketplace
+                    </Button>
+                    <IconButton size="small" color="inherit" onClick={() => setHighlightedStore(null)}>
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                }
+                sx={{ borderRadius: 2, alignItems: 'center' }}
+              >
+                Displaying seller store location: <strong>{highlightedStore.shopName}</strong> located at <strong>{highlightedStore.locationName}</strong>
+                {highlightedStore.title && ` — Featuring "${highlightedStore.title}"`}
+              </Alert>
+            </Box>
+          )}
+
+          <Grid container spacing={3} style={{ width: '100%', margin: 0 }}>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <List
+                isLoading={isLoading}
+                childClicked={childClicked}
+                places={places}
+                coords={coords}
+                type={type}
+                setType={setType}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 8 }} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Map
+                setChildClicked={setChildClicked}
+                coords={coords}
+                places={places}
+                highlightedStore={highlightedStore}
+                onBackToMarketplace={() => setActivePage('marketplace')}
+              />
+            </Grid>
           </Grid>
-          <Grid size={{ xs: 12, md: 8 }} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Map
-              setChildClicked={setChildClicked}
-              coords={coords}
-              places={places}
-            />
-          </Grid>
-        </Grid>
+        </Box>
       )}
 
       {/* 2. Marketplace Listing View */}
@@ -152,6 +197,7 @@ const App = () => {
           currentPlaceName={currentPlaceName}
           onNavigateToAddProduct={() => handleNavigate('add-product')}
           onOpenAuth={() => setAuthModalOpen(true)}
+          onViewStoreOnMap={handleViewStoreOnMap}
         />
       )}
 
@@ -174,12 +220,6 @@ const App = () => {
           setPendingPage(null);
         }}
         onAuthSuccess={handleAuthSuccess}
-      />
-
-      {/* Firebase & Appwrite Keys Configuration Modal */}
-      <ConfigModal
-        open={configModalOpen}
-        onClose={() => setConfigModalOpen(false)}
       />
     </ThemeProvider>
   );
