@@ -25,14 +25,11 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import PlaceIcon from '@mui/icons-material/Place';
 import PhoneIcon from '@mui/icons-material/Phone';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import MapIcon from '@mui/icons-material/Map';
 
 import {
   fetchMarketplaceProducts,
   getFavorites,
   toggleFavorite,
-  isFirebaseConfigured,
 } from '../../config/firebase';
 import ProductDetailModal from './ProductDetailModal';
 
