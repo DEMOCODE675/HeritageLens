@@ -3,6 +3,7 @@ import { CssBaseline, Grid, Box, Alert, Button, IconButton } from '@mui/material
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import CloseIcon from '@mui/icons-material/Close';
+import PlaceIcon from '@mui/icons-material/Place';
 
 import { getFoursquarePlaces } from './api/foursquareApi';
 import Header from './components/Header/Header';
@@ -10,6 +11,7 @@ import List from './components/Lists/List';
 import Map from './components/Map/Map';
 import Marketplace from './components/Marketplace/Marketplace';
 import AddProduct from './components/Marketplace/AddProduct';
+import MonumentScanner from './components/Scanner/MonumentScanner';
 import AuthModal from './components/Auth/AuthModal';
 import { subscribeToAuth, logoutUser } from './config/firebase';
 
@@ -34,11 +36,12 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Marketplace & Navigation State
-  const [activePage, setActivePage] = useState('advisor'); // 'advisor' | 'marketplace' | 'add-product'
+  const [activePage, setActivePage] = useState('advisor'); // 'advisor' | 'marketplace' | 'add-product' | 'scanner'
   const [currentUser, setCurrentUser] = useState(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [pendingPage, setPendingPage] = useState(null);
   const [highlightedStore, setHighlightedStore] = useState(null);
+  const [highlightedLandmark, setHighlightedLandmark] = useState(null);
 
   // Subscribe to Firebase Auth changes
   useEffect(() => {
@@ -135,6 +138,43 @@ const App = () => {
       {/* 1. Tourist Guide Advisor View */}
       {activePage === 'advisor' && (
         <Box sx={{ width: '100%' }}>
+          {/* Scanned Landmark "You Are Here" Alert Banner */}
+          {highlightedLandmark && (
+            <Box sx={{ px: 3, pt: 2, pb: 1 }}>
+              <Alert
+                severity="info"
+                icon={<PlaceIcon fontSize="inherit" sx={{ color: '#0284c7' }} />}
+                action={
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <Button
+                      color="inherit"
+                      size="small"
+                      variant="outlined"
+                      onClick={() => setActivePage('scanner')}
+                      sx={{ textTransform: 'none', fontWeight: 700, borderColor: 'currentColor' }}
+                    >
+                      View in Scanner
+                    </Button>
+                    <IconButton size="small" color="inherit" onClick={() => setHighlightedLandmark(null)}>
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                }
+                sx={{
+                  borderRadius: 2,
+                  alignItems: 'center',
+                  bgcolor: '#f0f9ff',
+                  border: '1.5px solid #bae6fd',
+                  color: '#0369a1',
+                }}
+              >
+                🎯 <strong>You are here!</strong> Scanned Landmark: <strong>{highlightedLandmark.title}</strong>
+                {highlightedLandmark.location && ` (${highlightedLandmark.location})`}
+                {' '}— Highlighted with a special pulsing beacon on the map so you know your exact spot.
+              </Alert>
+            </Box>
+          )}
+
           {/* Seller Store Banner when navigating from marketplace */}
           {highlightedStore && (
             <Box sx={{ px: 3, pt: 2, pb: 1 }}>
@@ -182,7 +222,9 @@ const App = () => {
                 coords={coords}
                 places={places}
                 highlightedStore={highlightedStore}
+                highlightedLandmark={highlightedLandmark}
                 onBackToMarketplace={() => setActivePage('marketplace')}
+                onBackToScanner={() => setActivePage('scanner')}
               />
             </Grid>
           </Grid>
@@ -209,6 +251,27 @@ const App = () => {
           currentPlaceName={currentPlaceName}
           onBack={() => setActivePage('marketplace')}
           onProductCreated={() => setActivePage('marketplace')}
+        />
+      )}
+
+      {/* 4. Tourist Heritage Cam / Monument & Cafe Scanner */}
+      {activePage === 'scanner' && (
+        <MonumentScanner
+          onBack={() => setActivePage('advisor')}
+          onViewLocationOnMap={(landmarkCoords, landmarkData) => {
+            if (landmarkCoords && Number.isFinite(landmarkCoords.lat) && Number.isFinite(landmarkCoords.lng)) {
+              setCoords({ lat: landmarkCoords.lat, lng: landmarkCoords.lng });
+              const title = (landmarkData && typeof landmarkData === 'object' ? landmarkData.title : landmarkData) || 'Scanned Sight';
+              setCurrentPlaceName(title);
+              setHighlightedStore(null);
+              setHighlightedLandmark(
+                typeof landmarkData === 'object' && landmarkData !== null
+                  ? { ...landmarkData, coordinates: landmarkCoords }
+                  : { title, coordinates: landmarkCoords }
+              );
+              setActivePage('advisor');
+            }
+          }}
         />
       )}
 
