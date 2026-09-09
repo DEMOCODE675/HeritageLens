@@ -70,7 +70,7 @@ const AddProduct = ({ currentUser, currentCoords, currentPlaceName, onBack, onPr
   useEffect(() => {
     if (currentUser?.shopName && !shopName) setShopName(currentUser.shopName);
     if (currentUser?.phone && !sellerPhone) setSellerPhone(currentUser.phone);
-  }, [currentUser]);
+  }, [currentUser, shopName, sellerPhone]);
 
   // Handle GPS auto-detect
   const handleAutoDetectLocation = () => {
