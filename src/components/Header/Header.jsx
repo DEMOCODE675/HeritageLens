@@ -68,7 +68,7 @@ const Header = ({
             onClick={() => onNavigate && onNavigate('advisor')}
             sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.5 }}
           >
-            Travel Advisor
+          Heritage Lens
           </Typography>
 
           {/* Navigation link of page called "marketPlace" */}
