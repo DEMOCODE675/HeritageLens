@@ -84,4 +84,32 @@ export default makeStyles()((theme) => ({
             },
         },
     },
+    navContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(1),
+    },
+    navButton: {
+        color: 'inherit',
+        textTransform: 'none',
+        fontWeight: 600,
+        borderRadius: theme.spacing(2),
+        padding: theme.spacing(0.5, 1.5),
+        '&:hover': {
+            backgroundColor: alpha(theme.palette.common.white, 0.2),
+        },
+    },
+    activeNavButton: {
+        backgroundColor: alpha(theme.palette.common.white, 0.28),
+        color: '#fff',
+        fontWeight: 700,
+        '&:hover': {
+            backgroundColor: alpha(theme.palette.common.white, 0.38),
+        },
+    },
+    userSection: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(1),
+    },
 }));
