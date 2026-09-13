@@ -1,3 +1,12 @@
+<img width="1896" height="1047" alt="live_loc_places_hotels" src="https://github.com/user-attachments/assets/1f7d497a-13f1-45a2-a334-bda64570a4af" />
+
+<img width="1867" height="1067" alt="card_marketPlace" src="https://github.com/user-attachments/assets/b10537dd-5d87-49c7-bd96-46668481dc7f" />
+
+<img width="1872" height="1066" alt="card-inpage_market_Places" src="https://github.com/user-attachments/assets/f3dd5897-2fe0-401f-bf45-96d240e56cdd" />
+
+<img width="1865" height="1076" alt="card_upload_prd" src="https://github.com/user-attachments/assets/012ef7fc-b13e-4947-88c8-4fde988d628c" />
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

@@ -84,4 +84,40 @@ export default makeStyles()((theme) => ({
             },
         },
     },
+    navContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(0.8),
+    },
+    navButton: {
+        color: 'inherit',
+        textTransform: 'none',
+        fontWeight: 600,
+        borderRadius: theme.spacing(2),
+        padding: theme.spacing(0.5, 1.5),
+        minWidth: 'auto',
+        [theme.breakpoints.down('sm')]: {
+            padding: theme.spacing(0.6, 0.8),
+            borderRadius: theme.spacing(1.5),
+            '& .MuiButton-startIcon': {
+                margin: 0,
+            },
+        },
+        '&:hover': {
+            backgroundColor: alpha(theme.palette.common.white, 0.2),
+        },
+    },
+    activeNavButton: {
+        backgroundColor: alpha(theme.palette.common.white, 0.28),
+        color: '#fff',
+        fontWeight: 700,
+        '&:hover': {
+            backgroundColor: alpha(theme.palette.common.white, 0.38),
+        },
+    },
+    userSection: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(1),
+    },
 }));
