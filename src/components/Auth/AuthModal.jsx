@@ -134,13 +134,13 @@ const AuthModal = ({ open, onClose, onAuthSuccess, initialRole = 'seller' }) => 
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {tabIndex === 0
-            ? 'Sign in with your Firebase credentials to access marketplace'
+            ? 'Sign in to access marketplace'
             : 'Create your account to browse or sell local crafts'}
         </Typography>
         <Box sx={{ mt: 1 }}>
           <Chip
             size="small"
-            label={firebaseConnected ? 'Firebase: Connected' : 'Firebase: Demo Mode (Keys can be added)'}
+            label={firebaseConnected ? 'Signed In / Signed Up' : 'Firebase: Demo Mode (Keys can be added)'}
             color={firebaseConnected ? 'success' : 'info'}
             variant="outlined"
           />
@@ -255,7 +255,7 @@ const AuthModal = ({ open, onClose, onAuthSuccess, initialRole = 'seller' }) => 
 
         <Box sx={{ mt: 2, pt: 1, borderTop: '1px dashed #e0e0e0' }}>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, textAlign: 'center' }}>
-            Instant Testing (no keys required):
+            Instant Testing
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
