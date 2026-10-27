@@ -11,6 +11,12 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Environment setup
+
+1. Copy `.env.example` to `.env`.
+2. Set your local credentials in `.env` (including `REACT_APP_GOOGLE_MAPS_API_KEY`).
+3. Never commit real credentials or API keys to the repository.
+
 ## Available Scripts
 
 In the project directory, you can run:
